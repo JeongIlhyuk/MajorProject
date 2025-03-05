@@ -1,0 +1,12 @@
+import matplotlib.pyplot as plt
+import numpy as np
+
+# 간단한 그래프 그리기
+x = np.linspace(0, 10, 100)
+y = np.sin(x)
+plt.plot(x, y)
+plt.title('사인 함수')
+plt.xlabel('X 축')
+plt.ylabel('Y 축')
+plt.savefig('sin_graph.png')  # 이미지로 저장
+plt.show()  # 화면에 표시
