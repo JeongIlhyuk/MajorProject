@@ -12,7 +12,10 @@ import androidx.compose.runtime.setValue
 import com.example.myapplication.data.model.Study
 import com.example.myapplication.data.model.StudyType
 import com.example.myapplication.data.model.User
+import com.example.myapplication.data.repository.StudyRepositoryImpl
 import com.example.myapplication.data.repository.UserRepositoryImpl
+import com.example.myapplication.ui.create.CreateStudyScreen
+import com.example.myapplication.ui.create.CreateStudyViewModel
 import com.example.myapplication.ui.home.HomeScreen
 import com.example.myapplication.ui.login.LoginScreen
 import com.example.myapplication.ui.signup.SignupScreen
@@ -23,6 +26,7 @@ import java.util.Date
 class MainActivity : ComponentActivity() {
     // 임시로 레포지토리 직접 생성 (실제 구현에서는 DI 사용)
     private val userRepository = UserRepositoryImpl()
+    private val studyRepository = StudyRepositoryImpl()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +34,35 @@ class MainActivity : ComponentActivity() {
 
         // 임시로 ViewModel 직접 생성 (실제 구현에서는 ViewModelProvider 사용)
         val signupViewModel = SignupViewModel(userRepository)
+        val createStudyViewModel = CreateStudyViewModel(studyRepository, userRepository)
+
+        // 임시 스터디 데이터 추가
+        val dummyStudies = listOf(
+            Study(
+                title = "알고리즘 스터디",
+                description = "코딩 테스트 대비 스터디",
+                studyType = StudyType.OFFLINE,
+                location = "서울대입구역 카페",
+                subject = "컴퓨터 공학",
+                maxParticipants = 6,
+                currentParticipants = 4,
+                requiredInkAmount = 70.0,
+                penDeposit = 2,
+                startDate = Date()
+            ),
+            Study(
+                title = "토익 스터디",
+                description = "토익 800점 목표",
+                studyType = StudyType.ONLINE,
+                subject = "어학",
+                maxParticipants = 10,
+                currentParticipants = 7,
+                requiredInkAmount = 60.0,
+                penDeposit = 1,
+                startDate = Date()
+            )
+        )
+        studyRepository.addSampleData(dummyStudies)
 
         setContent {
             MyApplicationTheme {
@@ -43,33 +76,6 @@ class MainActivity : ComponentActivity() {
                     email = "ghdfo0711@naver.com",
                     inkAmount = 87.5,
                     fountainPens = 3
-                )
-
-                // 임시 스터디 목록 (스터디 리포지토리 구현 전까지 사용)
-                val dummyStudies = listOf(
-                    Study(
-                        title = "알고리즘 스터디",
-                        description = "코딩 테스트 대비 스터디",
-                        studyType = StudyType.OFFLINE,
-                        location = "서울대입구역 카페",
-                        subject = "컴퓨터 공학",
-                        maxParticipants = 6,
-                        currentParticipants = 4,
-                        requiredInkAmount = 70.0,
-                        penDeposit = 2,
-                        startDate = Date()
-                    ),
-                    Study(
-                        title = "토익 스터디",
-                        description = "토익 800점 목표",
-                        studyType = StudyType.ONLINE,
-                        subject = "어학",
-                        maxParticipants = 10,
-                        currentParticipants = 7,
-                        requiredInkAmount = 60.0,
-                        penDeposit = 1,
-                        startDate = Date()
-                    )
                 )
 
                 when (val screen = currentScreen) {
@@ -113,12 +119,28 @@ class MainActivity : ComponentActivity() {
                                 Toast.makeText(this, "${study.title} 선택됨", Toast.LENGTH_SHORT).show()
                             },
                             onCreateStudyClick = {
-                                // 스터디 생성 화면 이동 (구현 예정)
-                                Toast.makeText(this, "스터디 생성 화면 (준비 중)", Toast.LENGTH_SHORT).show()
+                                // 스터디 생성 화면으로 이동
+                                currentScreen = Screen.CreateStudy
                             },
                             onProfileClick = {
                                 // 프로필 화면 이동 (구현 예정)
                                 Toast.makeText(this, "프로필 화면 (준비 중)", Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    }
+
+                    is Screen.CreateStudy -> {
+                        CreateStudyScreen(
+                            onCreateClick = { newStudy ->
+                                // 스터디 생성 로직
+                                createStudyViewModel.createStudy(newStudy, dummyUser)
+                                Toast.makeText(this, "${newStudy.title} 스터디가 생성되었습니다", Toast.LENGTH_SHORT).show()
+                                // 홈 화면으로 돌아가기
+                                currentScreen = Screen.Home
+                            },
+                            onBackClick = {
+                                // 홈 화면으로 돌아가기
+                                currentScreen = Screen.Home
                             }
                         )
                     }
@@ -133,5 +155,6 @@ sealed class Screen {
     object Login : Screen()
     object Signup : Screen()
     object Home : Screen()
+    object CreateStudy : Screen()
     // 나중에 다른 화면들 추가 예정
 }

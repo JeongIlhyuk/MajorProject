@@ -56,4 +56,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    // app의 build.gradle.kts에 추가
+    implementation("androidx.compose.material:material-icons-extended:1.6.1")
 }
